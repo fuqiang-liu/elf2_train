@@ -76,9 +76,9 @@ def get_euler_xyz_tensor(quat):
     euler_xyz[euler_xyz > np.pi] -= 2 * np.pi
     return euler_xyz
 
-class X1DHStandEnv(LeggedRobot):
+class Elf2DHStandEnv(LeggedRobot):
     '''
-    X1DHStandEnv is a class that represents a custom environment for a legged robot.
+    Elf2DHStandEnv is a class that represents a custom environment for a legged robot.
 
     Args:
         cfg (LeggedRobotCfg): Configuration object for the legged robot.
@@ -157,7 +157,7 @@ class X1DHStandEnv(LeggedRobot):
         # right foot stance
         stance_mask[:, 1] = sin_pos < 0
         # Add double support phase
-        stance_mask[torch.abs(sin_pos) < 0.1] = 1
+        stance_mask[torch.abs(sin_pos) < 0.2] = 1
 
         # stand mask == 1 means stand leg 
         return stance_mask
@@ -295,7 +295,7 @@ class X1DHStandEnv(LeggedRobot):
         self.ref_dof_pos[:, 10] = sin_pos_r * self.cfg.rewards.final_swing_joint_delta_pos[10]
         self.ref_dof_pos[:, 11] = sin_pos_r * self.cfg.rewards.final_swing_joint_delta_pos[11]
 
-        self.ref_dof_pos[torch.abs(sin_pos) < 0.1] = 0.
+        self.ref_dof_pos[torch.abs(sin_pos) < 0.2] = 0.
         
         # if use_ref_actions=True, action += ref_action
         self.ref_action = 2 * self.ref_dof_pos
@@ -665,8 +665,8 @@ class X1DHStandEnv(LeggedRobot):
         on penalizing deviation in yaw and roll directions. Excludes yaw and roll from the main penalty.
         """
         joint_diff = self.dof_pos - self.default_joint_pd_target
-        left_yaw_roll = joint_diff[:, [1,2,5]]
-        right_yaw_roll = joint_diff[:, [7,8,11]]
+        left_yaw_roll = joint_diff[:, [0,1,5]]
+        right_yaw_roll = joint_diff[:, [6,7,11]]
         yaw_roll = torch.norm(left_yaw_roll, dim=1) + torch.norm(right_yaw_roll, dim=1)
         yaw_roll = torch.clamp(yaw_roll - 0.1, 0, 50)
         return torch.exp(-yaw_roll * 100) - 0.01 * torch.norm(joint_diff, dim=1)

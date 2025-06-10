@@ -32,7 +32,7 @@
 
 from humanoid.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobotCfgPPO
 
-class X1DHStandCfg(LeggedRobotCfg):
+class Elf2DHStandCfg(LeggedRobotCfg):
     """
     Configuration class for the XBotL humanoid robot.
     """
@@ -60,18 +60,18 @@ class X1DHStandCfg(LeggedRobotCfg):
 
 
     class asset(LeggedRobotCfg.asset):
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/x1/urdf/x1.urdf'
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/elf2/urdf/elf2_trunk_dof12.urdf'
         xml_file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/x1/mjcf/xyber_x1_flat.xml'
 
-        name = "x1"
-        foot_name = "ankle_roll"
-        knee_name = "knee_pitch"
+        name = "elf2"
+        foot_name = "ankle_x"
+        knee_name = "knee_y"
 
-        terminate_after_contacts_on = ['base_link']
-        penalize_contacts_on = ["base_link"]
+        terminate_after_contacts_on = ['base_link', "hip"]
+        penalize_contacts_on = ["base_link", "knee_y"]
         self_collisions = 0  # 1 to disable, 0 to enable...bitwise filter
         flip_visual_attachments = False
-        replace_cylinder_with_capsule = False
+        replace_cylinder_with_capsule = True
         fix_base_link = False
 
     class terrain(LeggedRobotCfg.terrain):
@@ -123,31 +123,30 @@ class X1DHStandCfg(LeggedRobotCfg):
 
 
     class init_state(LeggedRobotCfg.init_state):
-        pos = [0.0, 0.0, 0.7]
+        pos = [0.0, 0.0, 1.1]
 
         default_joint_angles = {  # = target angles [rad] when action = 0.0
-            'left_hip_pitch_joint': 0.4,
-            'left_hip_roll_joint': 0.05,
-            'left_hip_yaw_joint': -0.31,
-            'left_knee_pitch_joint': 0.49,
-            'left_ankle_pitch_joint': -0.21,
-            'left_ankle_roll_joint': 0.0,
-            'right_hip_pitch_joint': -0.4,
-            'right_hip_roll_joint': -0.05,
-            'right_hip_yaw_joint': 0.31,
-            'right_knee_pitch_joint': 0.49,
-            'right_ankle_pitch_joint': -0.21, 
-            'right_ankle_roll_joint': 0.0,
+            'l_hip_z_joint': 0.0,
+            'l_hip_x_joint': 0.0,
+            'l_hip_y_joint': -0.3,
+            'l_knee_y_joint': 0.6,
+            'l_ankle_y_joint': -0.3,
+            'l_ankle_x_joint': 0.0,
+            
+            'r_hip_z_joint': 0.0,
+            'r_hip_x_joint': 0.0,
+            'r_hip_y_joint': -0.3,
+            'r_knee_y_joint': 0.6,
+            'r_ankle_y_joint': -0.3,
+            'r_ankle_x_joint': 0.0,
         }
 
     class control(LeggedRobotCfg.control):
         # PD Drive parameters:
         control_type = 'P'
 
-        stiffness = {'hip_pitch_joint': 30, 'hip_roll_joint': 40,'hip_yaw_joint': 35,
-                     'knee_pitch_joint': 100, 'ankle_pitch_joint': 35, 'ankle_roll_joint': 35}
-        damping = {'hip_pitch_joint': 3, 'hip_roll_joint': 3.0,'hip_yaw_joint': 4, 
-                   'knee_pitch_joint': 10, 'ankle_pitch_joint': 0.5, 'ankle_roll_joint': 0.5}
+        stiffness = {'hip_z': 100, 'hip_x': 100, 'hip_y': 100, 'knee_y': 100, 'ankle_y': 10, 'ankle_x': 10}
+        damping = {'hip_z': 2, 'hip_x': 2, 'hip_y': 2, 'knee_y': 2, 'ankle_y': 1, 'ankle_x': 1}
 
         # action scale: target angle = actionScale * action + defaultAngle
         action_scale = 0.5
@@ -183,11 +182,11 @@ class X1DHStandCfg(LeggedRobotCfg):
         push_interval_s = 4 # every this second, push robot
         update_step = 2000 * 24 # after this count, increase push_duration index
         push_duration = [0, 0.05, 0.1, 0.15, 0.2, 0.25] # increase push duration during training
-        max_push_vel_xy = 0.2
-        max_push_ang_vel = 0.2
+        max_push_vel_xy = 0.6
+        max_push_ang_vel = 0.4
 
         randomize_base_mass = True
-        added_mass_range = [-3, 3] # base mass rand range, base mass is all fix link sum mass
+        added_mass_range = [-2, 6] # base mass rand range, base mass is all fix link sum mass
 
         randomize_com = True
         com_displacement_range = [[-0.05, 0.05],
@@ -295,7 +294,7 @@ class X1DHStandCfg(LeggedRobotCfg):
         sw_switch = True # use stand_com_threshold or not
 
         class ranges:
-            lin_vel_x = [-0.4, 1.2] # min max [m/s] 
+            lin_vel_x = [-0.4, 0.8] # min max [m/s] 
             lin_vel_y = [-0.4, 0.4]   # min max [m/s]
             ang_vel_yaw = [-0.6, 0.6]    # min max [rad/s]
             heading = [-3.14, 3.14]
@@ -304,15 +303,16 @@ class X1DHStandCfg(LeggedRobotCfg):
         soft_dof_pos_limit = 0.98
         soft_dof_vel_limit = 0.9
         soft_torque_limit = 0.9
-        base_height_target = 0.61
-        foot_min_dist = 0.2
+        base_height_target = 0.98
+        foot_min_dist = 0.15
         foot_max_dist = 1.0
 
         # final_swing_joint_pos = final_swing_joint_delta_pos + default_pos
-        final_swing_joint_delta_pos = [0.25, 0.05, -0.11, 0.35, -0.16, 0.0, -0.25, -0.05, 0.11, 0.35, -0.16, 0.0]
+        final_swing_joint_delta_pos = [0.0, 0.0, -0.16, 0.32, -0.16, 0.0,
+                                       0.0, 0.0, -0.16, 0.32, -0.16, 0.0]
         target_feet_height = 0.03 
         target_feet_height_max = 0.06
-        feet_to_ankle_distance = 0.041
+        feet_to_ankle_distance = 0.04
         cycle_time = 0.7
         # if true negative total rewards are clipped at zero (avoids early termination problems)
         only_positive_rewards = True
@@ -367,7 +367,7 @@ class X1DHStandCfg(LeggedRobotCfg):
         clip_actions = 100.
 
 
-class X1DHStandCfgPPO(LeggedRobotCfgPPO):
+class Elf2DHStandCfgPPO(LeggedRobotCfgPPO):
     seed = 5
     runner_class_name = 'DHOnPolicyRunner'   # DWLOnPolicyRunner
 
@@ -382,7 +382,7 @@ class X1DHStandCfgPPO(LeggedRobotCfgPPO):
         filter_size=[32, 16]
         stride_size=[3, 2]
         lh_output_dim= 64   #long history output dim
-        in_channels = X1DHStandCfg.env.frame_stack
+        in_channels = Elf2DHStandCfg.env.frame_stack
 
     class algorithm(LeggedRobotCfgPPO.algorithm):
         entropy_coef = 0.001
@@ -391,20 +391,20 @@ class X1DHStandCfgPPO(LeggedRobotCfgPPO):
         gamma = 0.994
         lam = 0.9
         num_mini_batches = 4
-        if X1DHStandCfg.terrain.measure_heights:
-            lin_vel_idx = (X1DHStandCfg.env.single_num_privileged_obs + X1DHStandCfg.terrain.num_height) * (X1DHStandCfg.env.c_frame_stack - 1) + X1DHStandCfg.env.single_linvel_index
+        if Elf2DHStandCfg.terrain.measure_heights:
+            lin_vel_idx = (Elf2DHStandCfg.env.single_num_privileged_obs + Elf2DHStandCfg.terrain.num_height) * (Elf2DHStandCfg.env.c_frame_stack - 1) + Elf2DHStandCfg.env.single_linvel_index
         else:
-            lin_vel_idx = X1DHStandCfg.env.single_num_privileged_obs * (X1DHStandCfg.env.c_frame_stack - 1) + X1DHStandCfg.env.single_linvel_index
+            lin_vel_idx = Elf2DHStandCfg.env.single_num_privileged_obs * (Elf2DHStandCfg.env.c_frame_stack - 1) + Elf2DHStandCfg.env.single_linvel_index
 
     class runner:
         policy_class_name = 'ActorCriticDH'
         algorithm_class_name = 'DHPPO'
         num_steps_per_env = 24  # per iteration
-        max_iterations = 20000  # number of policy updates
+        max_iterations = 50000  # number of policy updates
 
         # logging
         save_interval = 100  # check for potential saves every this many iterations
-        experiment_name = 'x1_dh_stand'
+        experiment_name = 'elf2_dh_stand'
         run_name = ''
         # load and resume
         resume = False

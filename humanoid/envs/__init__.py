@@ -38,6 +38,11 @@ from .x1.x1_dh_stand_config  import X1DHStandCfg, X1DHStandCfgPPO
 
 from .x1.x1_dh_stand_env import X1DHStandEnv
 
+from .elf2.elf2_dh_stand_config  import Elf2DHStandCfg, Elf2DHStandCfgPPO
+from .elf2.elf2_dh_stand_env import Elf2DHStandEnv
+
 from humanoid.utils.task_registry import task_registry
 
 task_registry.register( "x1_dh_stand", X1DHStandEnv, X1DHStandCfg(), X1DHStandCfgPPO() )
+
+task_registry.register( "elf2_dh_stand", Elf2DHStandEnv, Elf2DHStandCfg(), Elf2DHStandCfgPPO() )
